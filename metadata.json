@@ -1,0 +1,6 @@
+{
+  "name": "IRMS SaaS",
+  "description": "Integrated Resource Management System",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

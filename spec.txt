@@ -1,0 +1,474 @@
+﻿ESTABLISHMENT NUJOOM AL-TOURID FOR TRADING
+CR: 4030401358  |  VAT: 300215797600003
+King Fahad Road, Al Faisaliya, Jeddah 23444, KSA  |  0502918573
+info@fabulouzz.com  |  www.fabulouzz.com
+                                                                                                                                                                
+INTERNAL RESOURCE
+MANAGEMENT SYSTEM
+IRMS SaaS — MVP Product & Production Build Specification
+A Fabulouzz Technologies SaaS Product
+
+
+DOCUMENT CONTROL
+	VALUE
+	Document Type
+	MVP Product & Technical Specification Template
+	Product
+	Internal Resource Management System (IRMS)
+	Product Category
+	Workforce / Site / Project Operations SaaS
+	Prepared / Marketed By
+	Fabulouzz Technologies
+	Version
+	MVP v1.0
+	Status
+	Production Build Specification
+	Document Date
+	09 August 2026
+	Client / Tenant
+	[CLIENT / ORGANIZATION NAME]
+	
+
+DOCUMENT PURPOSE
+This template defines the business scope, operational modules, workflows, data model, security model, technical requirements and acceptance criteria for the IRMS SaaS MVP. Replace bracketed placeholders with customer-specific information before issuing a client-facing version.
+	
+
+________________
+
+
+1. Executive Summary
+IRMS (Internal Resource Management System) is a centralized SaaS platform for managing employees, operational sites, coordinators, projects, daily timesheets, vehicles, accommodation, rooms and room inventory. The MVP is designed to replace fragmented paper records, spreadsheets and informal operational tracking with a structured, searchable and auditable system.
+* Centralized employee master records and supporting documents.
+* Site and coordinator management across multiple operational locations.
+* Project creation and employee-to-project assignment with historical records.
+* Daily site timesheet submission, attachment and approval workflow.
+* Vehicle master data and employee/site/project assignment history.
+* Accommodation, room allocation and room inventory tracking.
+* Management dashboard, reports, notifications and audit logs.
+* Multi-tenant SaaS architecture with role-based access control and tenant isolation.
+2. Product Positioning
+POSITIONING STATEMENT
+IRMS gives organizations one operational source of truth for who is working where, on which project, under which coordinator, using which vehicle, staying in which accommodation/room, and what daily work record has been submitted.
+	
+
+3. Source Business Requirement
+The source requirement describes an organization with approximately 1,300 staff, 23 sites, 5 coordinators and 50 vehicles. The required system is described as a basic operational system for employee details, daily site timesheets, coordinator/site relationships, vehicle assignment, accommodation/room records, room contents and project assignments.
+BRANDED DOCUMENT BASIS
+The supplied Fabulouzz letterhead identifies ESTABLISHMENT NUJOOM AL-TOURID FOR TRADING, CR 4030401358, VAT 300215797600003, Jeddah, KSA, together with 0502918573, info@fabulouzz.com and www.fabulouzz.com.
+	
+
+4. MVP Scope
+#
+	MODULE
+	MVP RESPONSIBILITY
+	01
+	Authentication & Access
+	Login, password reset, sessions, RBAC, tenant isolation.
+	02
+	Organization Administration
+	Organization profile, users, roles, permissions and settings.
+	03
+	Dashboard
+	Operational KPIs, alerts and missing timesheet visibility.
+	04
+	Employees
+	Employee master records, status, contacts, employment and operational data.
+	05
+	Employee Documents
+	Secure document storage, expiry tracking and alerts.
+	06
+	Sites & Coordinators
+	Site master data and coordinator/site responsibility.
+	07
+	Projects
+	Project master data, sites and managers/coordinators.
+	08
+	Assignments
+	Employee/project/site assignments with history.
+	09
+	Daily Timesheets
+	Daily attendance, hours, attachments and approval.
+	10
+	Fleet
+	Vehicles and historical vehicle assignments.
+	11
+	Accommodation
+	Facilities, buildings, rooms and employee allocations.
+	12
+	Room Inventory
+	Furniture, kitchen and other room items/quantities.
+	13
+	Reports & Export
+	Operational reports, CSV/XLSX/PDF export.
+	14
+	Notifications
+	In-app alerts and email-ready notification architecture.
+	15
+	Audit Logs
+	Immutable record of important system actions.
+	16
+	Import / Migration
+	CSV/XLSX validation, preview, error reporting and import.
+	
+
+5. User Roles & Permissions
+ROLE
+	PRIMARY RESPONSIBILITY
+	ACCESS SCOPE
+	SaaS Super Admin
+	Platform administration
+	All tenants / platform functions
+	Organization Admin
+	Company administration
+	Entire organization
+	IT Manager
+	System & infrastructure administration
+	Entire organization + system controls
+	HR / Employee Admin
+	Employee records and documents
+	Workforce modules
+	Coordinator
+	Site operations and daily records
+	Assigned sites/projects
+	Site Supervisor
+	Site attendance and operational visibility
+	Assigned site
+	Employee
+	Self-service (optional MVP capability)
+	Own records
+	
+
+6. Operational Modules & Procedures
+6.1 Employee Management
+Employee record should support identification, employment, contact and operational assignment information.
+* Employee ID / Employee Number
+* Full name, nationality, gender and date of birth
+* National ID / Passport number
+* Profile photo
+* Joining date, job title, department, position and employment type
+* Supervisor and coordinator
+* Current site and project
+* Mobile, email and emergency contact
+* Assigned vehicle and accommodation/room
+* Active / inactive / leave / transferred / terminated / suspended status
+1. Authorized user opens Employees and selects Add Employee.
+2. System validates mandatory fields and employee-number uniqueness within the tenant.
+3. Employee is saved with an audit record.
+4. User may upload documents and create operational assignments.
+5. System maintains historical assignments instead of overwriting prior records.
+6.2 Employee Documents
+* Document categories must be configurable.
+* Store document metadata in PostgreSQL and files in private object storage.
+* Support issue/expiry dates and status calculation.
+* Provide 7/30/60/90-day expiry visibility.
+* Downloads must use authorization checks and short-lived signed URLs.
+6.3 Sites & Coordinators
+* Site code, name, description, address, city/region, GPS coordinates and status.
+* Primary coordinator and future support for multiple coordinator assignments.
+* Site-to-project relationships.
+* Site operational dashboard showing employees, projects, vehicles and timesheet status.
+6. Create site.
+7. Assign coordinator.
+8. Associate one or more projects.
+9. Assign employees and operational resources through controlled assignment records.
+6.4 Projects & Employee Assignments
+* Project code, name, client, description, dates, manager/coordinator and status.
+* Project-site relationship.
+* Employee assignment records with role, start date, end date and status.
+* Historical assignments must remain available after transfers.
+6.5 Daily Timesheets
+10. Coordinator selects Site and Date.
+11. System loads employees assigned to the selected operational scope.
+12. Coordinator records Present, Absent, Leave or Off.
+13. Optional check-in, check-out, regular hours, overtime and notes are captured.
+14. Supporting timesheet PDF/JPG/PNG/XLSX may be attached.
+15. Record is saved as Draft or submitted.
+16. Approver reviews and approves or rejects.
+17. Approved records become controlled; post-approval changes require an authorized edit request and reason.
+6.6 Fleet / Vehicles
+* Registration/plate, make, model, year, VIN, type and current mileage.
+* Insurance, registration and inspection expiry dates.
+* Vehicle status: Available, Assigned, Maintenance, Out of Service or Sold.
+* Assignment records must capture employee, site, project, start and return dates.
+* System must prevent conflicting active vehicle assignments.
+6.7 Accommodation & Room Inventory
+* Accommodation facility → building → floor → room hierarchy.
+* Room capacity and occupancy status.
+* Employee room/bed assignment with check-in/check-out dates.
+* Room inventory with item, category, quantity, condition and notes.
+* System must warn or reject capacity violations according to configuration.
+7. Core Data Model
+ENTITY
+	KEY RELATIONSHIPS
+	Organization
+	Parent tenant for all business records
+	User / Role / Permission
+	Authentication and RBAC
+	Employee
+	Site, project assignment, coordinator, vehicle, accommodation
+	EmployeeDocument
+	Employee → private document storage
+	Site
+	Coordinator, projects, employees, timesheets, vehicles
+	Project
+	Sites and employee assignments
+	EmployeeProjectAssignment
+	Employee ↔ Project ↔ Site history
+	Timesheet / TimesheetEntry
+	Site/date/project/employee operational record
+	Vehicle / VehicleAssignment
+	Vehicle ↔ employee/site/project history
+	Accommodation / Building / Room
+	Facility hierarchy
+	RoomAssignment
+	Employee ↔ room/bed history
+	RoomInventoryItem
+	Room → inventory items
+	Notification
+	User/system operational alerts
+	AuditLog
+	Immutable mutation and security history
+	
+
+8. Recommended Technical Architecture
+LAYER
+	RECOMMENDATION
+	Frontend
+	Next.js + React + TypeScript + Tailwind CSS
+	Backend
+	NestJS + TypeScript REST API (or equivalent production-grade full-stack architecture)
+	Database
+	PostgreSQL
+	ORM
+	Prisma or equivalent typed ORM
+	Cache / Jobs
+	Redis + background worker/queue
+	File Storage
+	S3-compatible private object storage
+	Authentication
+	Secure session/JWT architecture with password reset and optional MFA readiness
+	Deployment
+	Dockerized production deployment with separate web/API/worker services as appropriate
+	Observability
+	Structured logs, health endpoints, error tracking and metrics
+	
+
+9. API & Backend Standards
+* Version APIs under /api/v1.
+* Validate every request server-side.
+* Enforce tenant ownership and permissions on every protected resource.
+* Use consistent success/error response structures.
+* Use pagination for list endpoints.
+* Use database transactions for multi-record critical operations.
+* Never expose internal stack traces, secrets or private file paths.
+* Create audit entries for important mutations.
+Suggested resource groups: /auth, /organizations, /users, /employees, /sites, /coordinators, /projects, /assignments, /timesheets, /vehicles, /accommodations, /rooms, /inventory, /reports, /notifications, /audit-logs, /settings.
+10. Security & Compliance Baseline
+* Strict tenant isolation.
+* RBAC enforced server-side; UI visibility is not a security boundary.
+* Password hashing using a modern password hashing algorithm.
+* HTTPS in all production environments.
+* Secure cookies/tokens, session expiry and logout invalidation.
+* Rate limiting and brute-force protection.
+* Input validation, output encoding and injection protection.
+* Private document storage with signed temporary download URLs.
+* Security headers and secure CORS configuration.
+* Immutable audit logging for sensitive operations.
+* Secrets supplied through environment/secret management, never committed to source control.
+11. Reporting & Management Views
+REPORT
+	KEY CONTENT
+	Employee Report
+	Employee, site, project, coordinator, status, department
+	Site Report
+	Employees, projects, coordinator, vehicles, timesheet status
+	Project Report
+	Employees, sites, coordinator, duration and assignments
+	Vehicle Report
+	Vehicle, employee, site, project, status and expiry
+	Accommodation Report
+	Facility, room, capacity, occupants and inventory
+	Timesheet Report
+	Date, site, employee, project, attendance, hours and approval
+	
+
+12. SaaS / Multi-Tenant Requirements
+* Each organization is an isolated tenant.
+* Every business record carries an organization/tenant reference.
+* Organization users cannot access another organization's data.
+* Support organization-level settings and configurable statuses.
+* SaaS admin can manage organizations, users, usage and system health.
+* Billing/subscription architecture may be prepared for future activation without expanding the MVP scope.
+13. Data Migration & Import
+18. User uploads CSV/XLSX.
+19. System validates structure and mandatory fields.
+20. System provides a preview before commit.
+21. Validation errors are displayed per row/field.
+22. User confirms import.
+23. Valid records are committed transactionally where practical.
+24. Import result reports created, updated, skipped and failed records.
+25. Import action is audited.
+14. Non-Functional Requirements
+AREA
+	REQUIREMENT
+	Scalability
+	Initial target: 1,300+ employees, 23+ sites, 50+ vehicles; architecture should scale significantly beyond this.
+	Performance
+	Server-side pagination/filtering, indexed queries, efficient loading and appropriate caching.
+	Availability
+	Production deployment with health checks, monitoring and recovery procedures.
+	Data Integrity
+	Foreign keys, unique constraints, transactions and conflict validation.
+	Accessibility
+	Readable responsive UI, keyboard-friendly controls and clear status messaging.
+	Mobile
+	Coordinator/site workflows must work on mobile browsers.
+	Maintainability
+	Modular codebase, typed contracts, migrations, tests and documented deployment.
+	
+
+15. Testing & QA
+* Unit tests for business rules and validation.
+* Integration tests for authentication, authorization, persistence and file workflows.
+* E2E tests for critical operational workflows.
+* Permission tests proving restricted roles cannot access unauthorized records.
+* Tenant isolation tests proving cross-tenant access is impossible.
+* Import/export tests.
+* Approval workflow tests.
+* Regression suite executed before production release.
+16. AI Agent Build Plan
+PHASE
+	NAME
+	DELIVERABLE
+	Phase 1
+	Foundation
+	Repository, architecture, database, migrations, authentication, RBAC, tenant isolation, logging and error handling.
+	Phase 2
+	Master Data
+	Employees, documents, sites, coordinators and projects.
+	Phase 3
+	Assignments
+	Employee/site/project/coordinator assignment history and conflict rules.
+	Phase 4
+	Operations
+	Timesheets, vehicles, vehicle assignments, accommodation, rooms and inventory.
+	Phase 5
+	Management
+	Dashboard, reports, exports, notifications and audit logs.
+	Phase 6
+	Enterprise Readiness
+	Bulk import, security hardening, performance, monitoring, backups, tests and production deployment.
+	
+
+AI AGENT RULE
+After each phase, run the relevant tests and ensure the application remains runnable. Do not proceed by creating placeholder screens for unfinished core functions. When a dependency or external service is required, isolate it behind a clean service interface and document the environment variables needed.
+	
+
+17. MVP Acceptance Criteria
+* ☐ Administrator can create and manage an employee.
+* ☐ Employee can be assigned to a site and project with historical dates.
+* ☐ Coordinator can view assigned sites and employees.
+* ☐ Coordinator can create and submit a daily site timesheet.
+* ☐ Approver can approve or reject a timesheet.
+* ☐ Vehicle can be assigned to an employee/site/project without conflicting active assignments.
+* ☐ Employee can be assigned to accommodation and a room with capacity validation.
+* ☐ Room inventory can be recorded and reviewed.
+* ☐ Employee documents can be securely uploaded and expiry tracked.
+* ☐ Management can search and report across operational records.
+* ☐ All important mutations appear in audit history.
+* ☐ Tenant isolation and role permissions are verified by automated tests.
+* ☐ Production build, deployment and database migration procedures are documented.
+18. MVP Exclusions / Future Roadmap
+* Payroll and salary calculation.
+* Recruitment / applicant tracking.
+* Full accounting/ERP.
+* Advanced fleet maintenance and GPS tracking.
+* Biometric hardware integration.
+* Native mobile applications.
+* Advanced AI workforce analytics.
+Future releases may add employee self-service, QR/GPS attendance, WhatsApp notifications, OCR/document extraction, fleet maintenance, payroll/HR integrations and AI-assisted operational analytics.
+19. Client Configuration Template
+FIELD
+	CLIENT VALUE
+	Client / Organization Name
+	[ENTER CLIENT NAME]
+	Primary Contact
+	[NAME / TITLE]
+	Organization Email
+	[EMAIL]
+	Number of Employees
+	[NUMBER]
+	Number of Sites
+	[NUMBER]
+	Number of Projects
+	[NUMBER]
+	Number of Coordinators
+	[NUMBER]
+	Number of Vehicles
+	[NUMBER]
+	Accommodation Facilities
+	[NUMBER]
+	Primary Timezone
+	Asia/Riyadh
+	Required Languages
+	English / [Arabic / Other]
+	Branding
+	Fabulouzz Technologies + [Client Brand]
+	
+
+20. Production Delivery Checklist
+* ☐ Source repository initialized and protected.
+* ☐ Environment variables documented.
+* ☐ Database migration and seed scripts verified.
+* ☐ Object storage configured and private.
+* ☐ Authentication and RBAC tested.
+* ☐ Tenant isolation tested.
+* ☐ Backups configured.
+* ☐ Monitoring and error tracking configured.
+* ☐ CI/CD pipeline configured.
+* ☐ Production build succeeds.
+* ☐ Security review completed.
+* ☐ E2E critical workflows pass.
+* ☐ Administrator runbook completed.
+* ☐ User/operator guide completed.
+21. Document Approval
+ROLE
+	NAME
+	SIGNATURE
+	DATE
+	Prepared By
+	Fabulouzz Technologies
+	
+
+	
+
+	Client Representative
+	[NAME]
+	
+
+	
+
+	Technical Approver
+	[NAME]
+	
+
+	
+
+	Project / Operations Approver
+	[NAME]
+	
+
+	
+
+	
+
+
+
+CONFIDENTIALITY
+This document is a product/build specification template. Customer-specific commercial terms, pricing, SLA, hosting costs, implementation timelines and contractual conditions should be maintained in the applicable proposal or agreement.
+	
+
+Fabulouzz Technologies
+Internal Resource Management System • IRMS SaaS
+FABULOUZZ TECHNOLOGIES  •  IRMS SaaS  •  Confidential
+Page
