@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, CheckCircle, XCircle, FileSpreadsheet, Upload, Download, AlertCircle, Save, Send, Eye, Search, X, MessageSquare, History } from 'lucide-react';
+import { FileText, CheckCircle, XCircle, FileSpreadsheet, Upload, Download, AlertCircle, Save, Send, Eye, Search, X, MessageSquare, History, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Timesheets() {
@@ -18,7 +18,8 @@ export default function Timesheets() {
   const [selectedUploadSite, setSelectedUploadSite] = useState('');
   const [selectedUploadProject, setSelectedUploadProject] = useState('');
 
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const maxMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
   const [csvErrors, setCsvErrors] = useState<string[]>([]);
   const [parsedData, setParsedData] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);

@@ -74,6 +74,8 @@ export const sites = pgTable('sites', {
   address: text('address'),
   cityRegion: text('city_region'),
   gpsCoordinates: text('gps_coordinates'),
+  latitude: text('latitude'),
+  longitude: text('longitude'),
   location: text('location'),
   status: text('status').default('active').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -86,6 +88,11 @@ export const projects = pgTable('projects', {
   name: text('name').notNull(),
   client: text('client'),
   description: text('description'),
+  location: text('location'),
+  address: text('address'),
+  gpsCoordinates: text('gps_coordinates'),
+  latitude: text('latitude'),
+  longitude: text('longitude'),
   startDate: date('start_date'),
   endDate: date('end_date'),
   managerId: integer('manager_id'), // References employee or user
@@ -145,11 +152,15 @@ export const timesheets = pgTable('timesheets', {
 export const leaves = pgTable('leaves', {
   id: serial('id').primaryKey(),
   organizationId: integer('organization_id').references(() => organizations.id).notNull(),
+  requesterId: integer('requester_id').references(() => employees.id),
   employeeId: integer('employee_id').references(() => employees.id).notNull(),
-  leaveType: text('leave_type').notNull(), // Annual, Sick, Unpaid, etc.
+  siteId: integer('site_id').references(() => sites.id),
+  projectId: integer('project_id').references(() => projects.id),
+  leaveType: text('leave_type').notNull(),
   startDate: date('start_date').notNull(),
   endDate: date('end_date').notNull(),
-  status: text('status').default('pending').notNull(), // pending, approved, rejected
+  reason: text('reason'),
+  status: text('status').default('pending').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -188,7 +199,21 @@ export const accommodations = pgTable('accommodations', {
   id: serial('id').primaryKey(),
   organizationId: integer('organization_id').references(() => organizations.id).notNull(),
   name: text('name').notNull(),
+  type: text('type').default('Staff Compound').notNull(), // Staff Compound, Apartment Complex, Villa / House, Modular Camp, Hotel / Guesthouse, Dormitory
+  location: text('location'), // Specific neighborhood/area where created
   address: text('address'),
+  gpsCoordinates: text('gps_coordinates'),
+  latitude: text('latitude'),
+  longitude: text('longitude'),
+  totalRooms: integer('total_rooms'),
+  roomCapacity: integer('room_capacity'), // General rooms capacity
+  perRoomCapacity: integer('per_room_capacity'), // Avg beds per room
+  roomTypes: text('room_types'), // Single, Double, Quad, Dormitory
+  totalAdmitCapacity: integer('total_admit_capacity').default(0).notNull(), // Max beds/personnel
+  nearSiteId: integer('near_site_id').references(() => sites.id),
+  nearProjectId: integer('near_project_id').references(() => projects.id),
+  amenities: text('amenities'), // WiFi, AC, Mess Hall, Laundry, Security
+  contactNumber: text('contact_number'),
   status: text('status').default('active').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
@@ -200,6 +225,7 @@ export const rooms = pgTable('rooms', {
   building: text('building'),
   floor: text('floor'),
   roomNumber: text('room_number').notNull(),
+  roomType: text('room_type').default('Standard'),
   capacity: integer('capacity').notNull(),
   status: text('status').default('available').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -213,6 +239,7 @@ export const roomAssignments = pgTable('room_assignments', {
   startDate: date('start_date').notNull(),
   endDate: date('end_date'),
   status: text('status').default('active').notNull(),
+  notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -235,7 +262,51 @@ export const assets = pgTable('assets', {
   type: text('type').notNull(), // Laptop, Vehicle, Tools, etc.
   assignedToEmployeeId: integer('assigned_to_employee_id').references(() => employees.id),
   assignedToSiteId: integer('assigned_to_site_id').references(() => sites.id),
+  make: text("make"),
+  model: text("model"),
+  licensePlate: text("license_plate"),
+  year: integer("year"),
+  vin: text("vin"),
+warrantyExpiry: date("warranty_expiry"),
+  insuranceExpiry: date("insurance_expiry"),
+  registrationExpiry: date("registration_expiry"),
+  inspectionExpiry: date("inspection_expiry"),
   status: text('status').default('available').notNull(), // available, assigned, maintenance, retired
+  purchasePrice: integer('purchase_price'),
+  purchaseDate: date('purchase_date'),
+  salvageValue: integer('salvage_value'),
+  usefulLifeYears: integer('useful_life_years'),
+  depreciationMethod: text('depreciation_method'), // 'straight_line', 'double_declining'
+  maintenanceIntervalDays: integer('maintenance_interval_days'),
+  lastMaintenanceDate: date('last_maintenance_date'),
+  photoUrl: text('photo_url'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+
+export const assetMaintenance = pgTable('asset_maintenance', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').references(() => organizations.id).notNull(),
+  assetId: integer('asset_id').references(() => assets.id).notNull(),
+  serviceDate: date('service_date').notNull(),
+  technicianNotes: text('technician_notes').notNull(),
+  status: text("status").notNull(),
+  downtimeDays: integer("downtime_days"), // 'completed', 'scheduled', 'in_progress'
+  performedByUserId: integer('performed_by_user_id').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const assetAllocations = pgTable('asset_allocations', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').references(() => organizations.id).notNull(),
+  assetId: integer('asset_id').references(() => assets.id).notNull(),
+  projectId: integer('project_id').references(() => projects.id),
+  siteId: integer('site_id').references(() => sites.id),
+  employeeId: integer('employee_id').references(() => employees.id),
+  startDate: date('start_date').notNull(),
+  endDate: date('end_date'),
+  status: text('status').default('active').notNull(), // 'active', 'scheduled', 'completed', 'maintenance'
+  notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
