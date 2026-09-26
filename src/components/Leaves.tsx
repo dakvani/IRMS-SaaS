@@ -183,16 +183,87 @@ export default function Leaves() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Leave Management</h1>
-          <p className="text-neutral-500 mt-1">Review and manage site employee time off.</p>
+          <p className="text-neutral-500 font-medium mt-1">Review workforce time off requests, approvals, and annual rest cycles.</p>
         </div>
         {!isAdding && (
           <button 
             onClick={() => setIsAdding(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Request Leave
           </button>
         )}
+      </div>
+
+      {/* Executive Leave KPI Metrics Banner (Matching Accommodations Styling) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
+              Total Applications
+            </span>
+            <span className="text-2xl font-black text-neutral-900 mt-1 block">
+              {leaves.length}
+            </span>
+            <span className="text-[11px] text-neutral-500 mt-0.5 block">
+              Logged Requests
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <CalendarOff className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
+              Approved Stays / Leave
+            </span>
+            <span className="text-2xl font-black text-emerald-600 mt-1 block">
+              {leaves.filter(l => l.status === 'approved').length}
+            </span>
+            <span className="text-[11px] text-neutral-500 mt-0.5 block">
+              Officially Sanctioned
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <CheckCircle className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
+              Pending Decisions
+            </span>
+            <span className="text-2xl font-black text-amber-600 mt-1 block">
+              {leaves.filter(l => l.status === 'pending' || !l.status).length}
+            </span>
+            <span className="text-[11px] text-neutral-500 mt-0.5 block">
+              Awaiting HR Review
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <History className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
+              Leave Classifications
+            </span>
+            <span className="text-2xl font-black text-blue-600 mt-1 block">
+              {new Set(leaves.map(l => l.leaveType)).size || 4}
+            </span>
+            <span className="text-[11px] text-neutral-500 mt-0.5 block">
+              Annual / Sick / Emergency
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <Printer className="w-6 h-6" />
+          </div>
+        </div>
       </div>
 
       {isAdding && (

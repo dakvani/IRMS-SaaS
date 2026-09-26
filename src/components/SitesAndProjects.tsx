@@ -1,9 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { MapPin, Plus, X, Edit, Briefcase, Search, Building2, Home, Navigation } from 'lucide-react';
+import { 
+  MapPin, Plus, X, Edit, Briefcase, Search, Building2, Home, Navigation,
+  LayoutGrid, List, Globe, Calendar, CheckCircle2, Clock, MapPinned, ExternalLink
+} from 'lucide-react';
 import { Map, AdvancedMarker, InfoWindow } from '@vis.gl/react-google-maps';
 
 export default function SitesAndProjects() {
   const [activeTab, setActiveTab] = useState<'sites' | 'projects' | 'map'>('sites');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   
   const [sites, setSites] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
@@ -185,160 +189,509 @@ export default function SitesAndProjects() {
     return { lat: 24.6877, lng: 46.7219 };
   }, [mapSites, mapProjects]);
 
-  const tabClass = (tabId: string) => 
-    `px-4 py-3 font-medium text-sm flex items-center gap-2 transition-colors ${
+  const tabClass = (tabId: string) => `
+    flex items-center gap-2 px-5 py-3 font-semibold text-xs tracking-tight transition-all shrink-0 cursor-pointer ${
       activeTab === tabId 
-        ? 'border-b-2 border-indigo-600 text-indigo-700' 
-        : 'text-neutral-500 hover:text-neutral-700'
+        ? 'border-b-2 border-neutral-900 text-neutral-900 font-bold bg-neutral-50/60' 
+        : 'text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50/30'
     }`;
 
-  if (isLoading) return <div className="p-8 text-neutral-500">Loading data...</div>;
+  if (isLoading) {
+    return (
+      <div className="p-12 flex justify-center items-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-full flex flex-col gap-6">
-      <div className="flex justify-between items-center">
+    <div className="h-full flex flex-col gap-6 relative">
+      {/* Module Title Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Sites & Projects</h1>
-          <p className="text-neutral-500 font-medium mt-1">Manage physical locations and ongoing projects.</p>
+          <p className="text-neutral-500 font-medium text-xs mt-1">Manage physical job sites, regional project developments, and geotagged operational zones.</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 w-full max-w-2xl">
-            <div className="relative flex-1">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              <input 
-                type="text" 
-                placeholder={activeTab === 'sites' ? "Search sites..." : "Search projects..."}
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white shadow-sm transition-all"
-              />
-            </div>
-            <select 
-              value={locationClientFilter} 
-              onChange={e => setLocationClientFilter(e.target.value)}
-              className="px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white shadow-sm text-sm font-medium text-neutral-700"
-            >
-              <option value="">{activeTab === 'sites' ? 'All Locations' : 'All Clients'}</option>
-              {activeTab === 'sites' 
-                ? uniqueLocations.map((loc: any) => <option key={loc} value={loc}>{loc}</option>)
-                : uniqueClients.map((client: any) => <option key={client} value={client}>{client}</option>)
-              }
-            </select>
-            <select 
-              value={statusFilter} 
-              onChange={e => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white shadow-sm text-sm font-medium text-neutral-700"
-            >
-              <option value="">All Statuses</option>
-              {activeTab === 'sites' ? (
-                <>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="completed">Completed</option>
-                </>
-              ) : (
-                <>
-                  <option value="planning">Planning</option>
-                  <option value="active">Active</option>
-                  <option value="on-hold">On Hold</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                </>
-              )}
-            </select>
-          </div>
+        <div className="flex items-center gap-3">
           {activeTab === 'sites' && !isSiteFormOpen && (
-            <button onClick={() => { setSiteForm({ id: null, code: '', name: '', location: '', address: '', cityRegion: '', gpsCoordinates: '', description: '', status: 'active' }); setIsSiteFormOpen(true); }} className="bg-neutral-900 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+            <button 
+              onClick={() => { 
+                setSiteForm({ id: null, code: '', name: '', location: '', address: '', cityRegion: '', gpsCoordinates: '', latitude: '', longitude: '', description: '', status: 'active' }); 
+                setIsSiteFormOpen(true); 
+              }} 
+              className="bg-neutral-900 hover:bg-neutral-800 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+            >
               <Plus className="w-4 h-4" /> Add Site
             </button>
           )}
           {activeTab === 'projects' && !isProjectFormOpen && (
-            <button onClick={() => { setProjectForm({ id: null, code: '', name: '', client: '', description: '', startDate: '', endDate: '', status: 'active' }); setIsProjectFormOpen(true); }} className="bg-neutral-900 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+            <button 
+              onClick={() => { 
+                setProjectForm({ id: null, code: '', name: '', client: '', description: '', location: '', address: '', gpsCoordinates: '', latitude: '', longitude: '', startDate: '', endDate: '', status: 'active' }); 
+                setIsProjectFormOpen(true); 
+              }} 
+              className="bg-neutral-900 hover:bg-neutral-800 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+            >
               <Plus className="w-4 h-4" /> Add Project
             </button>
           )}
         </div>
       </div>
-      
-      <div className="flex border-b border-neutral-200">
-        <button onClick={() => setActiveTab('sites')} className={tabClass('sites')}>
-          <MapPin className="w-4 h-4" />
-          Sites ({sites.length})
-        </button>
-        <button onClick={() => setActiveTab('projects')} className={tabClass('projects')}>
-          <Briefcase className="w-4 h-4" />
-          Projects ({projects.length})
-        </button>
-        <button onClick={() => setActiveTab('map')} className={tabClass('map')}>
-          <Navigation className="w-4 h-4 text-orange-600" />
-          Google Map View ({mapSites.length + mapProjects.length} Pinned)
-        </button>
+
+      {/* Executive KPI Summary Stat Cards Banner (Matching Accommodations Styling) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
+              Operational Sites
+            </span>
+            <span className="text-2xl font-black text-neutral-900 mt-1 block">
+              {sites.length}
+            </span>
+            <span className="text-[11px] text-neutral-500 mt-0.5 block">
+              {sites.filter(s => s.status === 'active').length} Active Field Locations
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <MapPin className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
+              Contract Projects
+            </span>
+            <span className="text-2xl font-black text-indigo-600 mt-1 block">
+              {projects.length}
+            </span>
+            <span className="text-[11px] text-neutral-500 mt-0.5 block">
+              {projects.filter(p => p.status === 'active').length} Active Developments
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <Briefcase className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
+              Active Regions
+            </span>
+            <span className="text-2xl font-black text-blue-600 mt-1 block">
+              {uniqueLocations.length || 1}
+            </span>
+            <span className="text-[11px] text-neutral-500 mt-0.5 block">
+              GCC Regional Coverage
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <Building2 className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
+              Geotagged Pinned
+            </span>
+            <span className="text-2xl font-black text-orange-600 mt-1 block">
+              {mapSites.length + mapProjects.length}
+            </span>
+            <span className="text-[11px] text-neutral-500 mt-0.5 block">
+              Google Maps Verified
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center">
+            <Navigation className="w-6 h-6" />
+          </div>
+        </div>
+      </div>
+
+      {/* Primary Navigation & Filters Bar */}
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-white p-2.5 rounded-2xl border border-neutral-200/90 shadow-2xs">
+        <div className="flex items-center gap-1 border-b md:border-b-0 border-neutral-200 w-full md:w-auto">
+          <button onClick={() => setActiveTab('sites')} className={tabClass('sites')}>
+            <MapPin className="w-4 h-4 text-emerald-600" />
+            Sites ({sites.length})
+          </button>
+          <button onClick={() => setActiveTab('projects')} className={tabClass('projects')}>
+            <Briefcase className="w-4 h-4 text-indigo-600" />
+            Projects ({projects.length})
+          </button>
+          <button onClick={() => setActiveTab('map')} className={tabClass('map')}>
+            <Navigation className="w-4 h-4 text-orange-600" />
+            Google Map ({mapSites.length + mapProjects.length} Pinned)
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
+          <div className="relative flex-1 md:w-64">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <input 
+              type="text" 
+              placeholder={activeTab === 'sites' ? "Search sites, codes, regions..." : "Search projects, clients..."}
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-neutral-50/60 text-xs text-neutral-900 placeholder:text-neutral-400"
+            />
+          </div>
+
+          {activeTab !== 'map' && (
+            <>
+              <select 
+                value={locationClientFilter} 
+                onChange={e => setLocationClientFilter(e.target.value)}
+                className="px-3 py-1.5 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-white text-xs font-medium text-neutral-700"
+              >
+                <option value="">{activeTab === 'sites' ? 'All Locations' : 'All Clients'}</option>
+                {activeTab === 'sites' 
+                  ? uniqueLocations.map((loc: any) => <option key={loc} value={loc}>{loc}</option>)
+                  : uniqueClients.map((client: any) => <option key={client} value={client}>{client}</option>)
+                }
+              </select>
+
+              <select 
+                value={statusFilter} 
+                onChange={e => setStatusFilter(e.target.value)}
+                className="px-3 py-1.5 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-white text-xs font-medium text-neutral-700"
+              >
+                <option value="">All Statuses</option>
+                {activeTab === 'sites' ? (
+                  <>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="completed">Completed</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="planning">Planning</option>
+                    <option value="active">Active</option>
+                    <option value="on-hold">On Hold</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </>
+                )}
+              </select>
+
+              {/* View Switcher: Grid vs Table (Matching Accommodations standard) */}
+              <div className="flex items-center bg-neutral-100 p-0.5 rounded-xl border border-neutral-200/60">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${
+                    viewMode === 'grid'
+                      ? 'bg-white text-neutral-900 shadow-xs'
+                      : 'text-neutral-500 hover:text-neutral-800'
+                  }`}
+                  title="Card Grid View"
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('table')}
+                  className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${
+                    viewMode === 'table'
+                      ? 'bg-white text-neutral-900 shadow-xs'
+                      : 'text-neutral-500 hover:text-neutral-800'
+                  }`}
+                  title="Table List View"
+                >
+                  <List className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 min-h-[400px] md:min-h-0 overflow-y-auto custom-scrollbar bg-white rounded-2xl border border-neutral-200 shadow-sm">
         
         {/* SITES TAB */}
         {activeTab === 'sites' && !isSiteFormOpen && (
-          <table className="w-full text-left text-sm">
-            <thead className="bg-neutral-50 sticky top-0 z-10 border-b border-neutral-200 text-neutral-500 font-semibold uppercase text-xs">
-              <tr>
-                <th className="px-6 py-3">Code</th>
-                <th className="px-6 py-3">Site Name</th>
-                <th className="px-6 py-3">Location / City</th>
-                <th className="px-6 py-3">Status</th>
-                <th className="px-6 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
-              {filteredSites.map(site => (
-                <tr key={site.id} className="hover:bg-neutral-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-neutral-600">{site.code || 'N/A'}</td>
-                  <td className="px-6 py-4 font-medium text-neutral-900">{site.name}</td>
-                  <td className="px-6 py-4 text-neutral-500">{site.location} {site.cityRegion && `(${site.cityRegion})`}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${site.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-700'}`}>{site.status}</span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button onClick={() => openEditSite(site)} className="text-neutral-400 hover:text-indigo-600 transition-colors p-1"><Edit className="w-4 h-4" /></button>
-                  </td>
+          viewMode === 'grid' ? (
+            <div className="p-5">
+              {filteredSites.length === 0 ? (
+                <div className="text-center py-16 text-neutral-500">
+                  <MapPin className="w-10 h-10 text-neutral-300 mx-auto mb-2" />
+                  <p className="font-semibold text-sm">No construction sites match your filter</p>
+                  <p className="text-xs text-neutral-400 mt-1">Try resetting search keywords or create a new site.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {filteredSites.map(site => (
+                    <div
+                      key={site.id}
+                      className="bg-white rounded-2xl border border-neutral-200/90 shadow-2xs hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between"
+                    >
+                      <div>
+                        {/* Top Row: Code Badge and Status */}
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            {site.code || 'SITE'}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                              site.status === 'active'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-neutral-100 text-neutral-600'
+                            }`}
+                          >
+                            {site.status}
+                          </span>
+                        </div>
+
+                        {/* Site Name */}
+                        <h3 className="font-bold text-neutral-900 text-base tracking-tight mb-1">
+                          {site.name}
+                        </h3>
+
+                        {/* Location Details */}
+                        <div className="flex items-start gap-1.5 text-xs text-neutral-500 mb-3">
+                          <MapPin className="w-3.5 h-3.5 text-neutral-400 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold text-neutral-700">
+                              {site.location || 'Saudi Arabia'}
+                            </span>
+                            {site.cityRegion && (
+                              <span className="text-[11px] text-neutral-500 ml-1">
+                                • {site.cityRegion}
+                              </span>
+                            )}
+                            {site.address && (
+                              <p className="text-[11px] text-neutral-400 mt-0.5 line-clamp-1">{site.address}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Specs Box (Matching Accommodation Capacity specs) */}
+                        <div className="bg-neutral-50 p-3 rounded-xl border border-neutral-100 space-y-2 mb-3">
+                          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                            <div className="border-r border-neutral-200 pr-1">
+                              <span className="text-[10px] uppercase text-neutral-400 block font-semibold">Code</span>
+                              <span className="font-bold text-neutral-800 text-xs font-mono">{site.code || '-'}</span>
+                            </div>
+                            <div className="border-r border-neutral-200 pr-1">
+                              <span className="text-[10px] uppercase text-neutral-400 block font-semibold">Region</span>
+                              <span className="font-bold text-neutral-800 text-xs truncate block">{site.cityRegion || site.location || 'KSA'}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase text-neutral-400 block font-semibold">GPS</span>
+                              <span className={`font-bold text-xs ${site.gpsCoordinates || site.latitude ? 'text-emerald-600' : 'text-neutral-400'}`}>
+                                {site.gpsCoordinates || site.latitude ? 'Geotagged' : 'Pending'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {site.description && (
+                          <p className="text-xs text-neutral-500 line-clamp-2 mb-3 bg-neutral-50/50 p-2 rounded-lg border border-neutral-100">
+                            {site.description}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Card Footer Actions */}
+                      <div className="pt-3 border-t border-neutral-100 flex items-center justify-between gap-2 mt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveTab('map');
+                            const sMatch = mapSites.find(ms => ms.id === site.id);
+                            if (sMatch) setActiveMapMarker({ type: 'site', data: sMatch });
+                          }}
+                          className="text-xs font-semibold text-neutral-600 hover:text-neutral-900 flex items-center gap-1.5 py-1 px-2 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer"
+                        >
+                          <Navigation className="w-3.5 h-3.5 text-orange-500" />
+                          View on Map
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openEditSite(site)}
+                          className="px-3 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                          Edit Site
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <table className="w-full text-left text-sm">
+              <thead className="bg-neutral-50 sticky top-0 z-10 border-b border-neutral-200 text-neutral-500 font-semibold uppercase text-xs">
+                <tr>
+                  <th className="px-6 py-3">Code</th>
+                  <th className="px-6 py-3">Site Name</th>
+                  <th className="px-6 py-3">Location / City</th>
+                  <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-neutral-100">
+                {filteredSites.map(site => (
+                  <tr key={site.id} className="hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-neutral-600 font-mono text-xs">{site.code || 'N/A'}</td>
+                    <td className="px-6 py-4 font-bold text-neutral-900">{site.name}</td>
+                    <td className="px-6 py-4 text-neutral-500">{site.location} {site.cityRegion && `(${site.cityRegion})`}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${site.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-neutral-100 text-neutral-700'}`}>{site.status}</span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button onClick={() => openEditSite(site)} className="text-neutral-400 hover:text-neutral-900 transition-colors p-1 cursor-pointer"><Edit className="w-4 h-4" /></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
         )}
 
         {/* PROJECTS TAB */}
         {activeTab === 'projects' && !isProjectFormOpen && (
-          <table className="w-full text-left text-sm">
-            <thead className="bg-neutral-50 sticky top-0 z-10 border-b border-neutral-200 text-neutral-500 font-semibold uppercase text-xs">
-              <tr>
-                <th className="px-6 py-3">Code</th>
-                <th className="px-6 py-3">Project Name</th>
-                <th className="px-6 py-3">Client</th>
-                <th className="px-6 py-3">Dates</th>
-                <th className="px-6 py-3">Status</th>
-                <th className="px-6 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
-              {filteredProjects.map(proj => (
-                <tr key={proj.id} className="hover:bg-neutral-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-neutral-600">{proj.code || 'N/A'}</td>
-                  <td className="px-6 py-4 font-medium text-neutral-900">{proj.name}</td>
-                  <td className="px-6 py-4 text-neutral-500">{proj.client || 'N/A'}</td>
-                  <td className="px-6 py-4 text-neutral-500">
-                    {proj.startDate ? new Date(proj.startDate).toLocaleDateString() : 'TBD'} - {proj.endDate ? new Date(proj.endDate).toLocaleDateString() : 'Ongoing'}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${proj.status === 'active' ? 'bg-indigo-100 text-indigo-700' : 'bg-neutral-100 text-neutral-700'}`}>{proj.status}</span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button onClick={() => openEditProject(proj)} className="text-neutral-400 hover:text-indigo-600 transition-colors p-1"><Edit className="w-4 h-4" /></button>
-                  </td>
+          viewMode === 'grid' ? (
+            <div className="p-5">
+              {filteredProjects.length === 0 ? (
+                <div className="text-center py-16 text-neutral-500">
+                  <Briefcase className="w-10 h-10 text-neutral-300 mx-auto mb-2" />
+                  <p className="font-semibold text-sm">No projects match your filter</p>
+                  <p className="text-xs text-neutral-400 mt-1">Try resetting search keywords or create a new project.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {filteredProjects.map(proj => (
+                    <div
+                      key={proj.id}
+                      className="bg-white rounded-2xl border border-neutral-200/90 shadow-2xs hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between"
+                    >
+                      <div>
+                        {/* Top Row: Code Badge and Status */}
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold tracking-wide uppercase bg-indigo-50 text-indigo-700 border border-indigo-200">
+                            {proj.code || 'PRJ'}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                              proj.status === 'active'
+                                ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                                : 'bg-neutral-100 text-neutral-600'
+                            }`}
+                          >
+                            {proj.status}
+                          </span>
+                        </div>
+
+                        {/* Project Name */}
+                        <h3 className="font-bold text-neutral-900 text-base tracking-tight mb-1">
+                          {proj.name}
+                        </h3>
+
+                        {/* Client & Location Details */}
+                        <div className="flex items-start gap-1.5 text-xs text-neutral-500 mb-3">
+                          <Building2 className="w-3.5 h-3.5 text-neutral-400 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold text-neutral-700">
+                              Client: {proj.client || 'Direct Contract'}
+                            </span>
+                            {proj.location && (
+                              <p className="text-[11px] text-neutral-400 mt-0.5">{proj.location}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Specs Box (Matching Accommodation Capacity specs) */}
+                        <div className="bg-neutral-50 p-3 rounded-xl border border-neutral-100 space-y-2 mb-3">
+                          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                            <div className="border-r border-neutral-200 pr-1">
+                              <span className="text-[10px] uppercase text-neutral-400 block font-semibold">Client</span>
+                              <span className="font-bold text-neutral-800 text-xs truncate block">{proj.client || 'N/A'}</span>
+                            </div>
+                            <div className="border-r border-neutral-200 pr-1">
+                              <span className="text-[10px] uppercase text-neutral-400 block font-semibold">Start Date</span>
+                              <span className="font-bold text-neutral-800 text-xs truncate block">
+                                {proj.startDate ? new Date(proj.startDate).toLocaleDateString() : 'TBD'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase text-neutral-400 block font-semibold">Timeline</span>
+                              <span className="font-bold text-indigo-700 text-xs truncate block">
+                                {proj.endDate ? new Date(proj.endDate).toLocaleDateString() : 'Ongoing'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {proj.description && (
+                          <p className="text-xs text-neutral-500 line-clamp-2 mb-3 bg-neutral-50/50 p-2 rounded-lg border border-neutral-100">
+                            {proj.description}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Card Footer Actions */}
+                      <div className="pt-3 border-t border-neutral-100 flex items-center justify-between gap-2 mt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveTab('map');
+                            const pMatch = mapProjects.find(mp => mp.id === proj.id);
+                            if (pMatch) setActiveMapMarker({ type: 'project', data: pMatch });
+                          }}
+                          className="text-xs font-semibold text-neutral-600 hover:text-neutral-900 flex items-center gap-1.5 py-1 px-2 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer"
+                        >
+                          <Navigation className="w-3.5 h-3.5 text-indigo-500" />
+                          View on Map
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openEditProject(proj)}
+                          className="px-3 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                          Edit Project
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <table className="w-full text-left text-sm">
+              <thead className="bg-neutral-50 sticky top-0 z-10 border-b border-neutral-200 text-neutral-500 font-semibold uppercase text-xs">
+                <tr>
+                  <th className="px-6 py-3">Code</th>
+                  <th className="px-6 py-3">Project Name</th>
+                  <th className="px-6 py-3">Client</th>
+                  <th className="px-6 py-3">Dates</th>
+                  <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-neutral-100">
+                {filteredProjects.map(proj => (
+                  <tr key={proj.id} className="hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-neutral-600 font-mono text-xs">{proj.code || 'N/A'}</td>
+                    <td className="px-6 py-4 font-bold text-neutral-900">{proj.name}</td>
+                    <td className="px-6 py-4 text-neutral-500">{proj.client || 'N/A'}</td>
+                    <td className="px-6 py-4 text-neutral-500 text-xs">
+                      {proj.startDate ? new Date(proj.startDate).toLocaleDateString() : 'TBD'} - {proj.endDate ? new Date(proj.endDate).toLocaleDateString() : 'Ongoing'}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${proj.status === 'active' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-neutral-100 text-neutral-700'}`}>{proj.status}</span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button onClick={() => openEditProject(proj)} className="text-neutral-400 hover:text-neutral-900 transition-colors p-1 cursor-pointer"><Edit className="w-4 h-4" /></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
         )}
 
         {/* GOOGLE MAP VIEW TAB */}

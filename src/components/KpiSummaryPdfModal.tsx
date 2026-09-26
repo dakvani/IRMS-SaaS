@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import { sanitizeDocumentOklch } from '../utils/pdfColorSanitizer.ts';
+import { printElement } from '../utils/printElement.ts';
 
 export interface DashboardKpiData {
   totalEmployees: number;
@@ -136,8 +137,19 @@ export default function KpiSummaryPdfModal({
     }
   };
 
+  const [printStatus, setPrintStatus] = useState<string | null>(null);
+
   const handlePrint = () => {
-    window.print();
+    if (reportRef.current) {
+      setPrintStatus('Opening Printer...');
+      printElement(reportRef.current, `IRMS_KPI_Summary_${reportId}`);
+      setTimeout(() => {
+        setPrintStatus('Print Dialog Ready');
+        setTimeout(() => setPrintStatus(null), 2500);
+      }, 400);
+    } else {
+      window.print();
+    }
   };
 
   return (
@@ -169,11 +181,11 @@ export default function KpiSummaryPdfModal({
             <button
               onClick={handlePrint}
               type="button"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
-              title="Print document directly"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-800 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+              title="Print document directly to printer"
             >
-              <Printer className="w-4 h-4 text-neutral-500" />
-              <span>Print</span>
+              <Printer className="w-4 h-4 text-orange-600" />
+              <span>{printStatus || 'Print to Printer'}</span>
             </button>
 
             <button
@@ -237,8 +249,8 @@ export default function KpiSummaryPdfModal({
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-neutral-100 custom-scrollbar">
           <div
             ref={reportRef}
-            className="bg-white text-neutral-900 p-8 sm:p-10 rounded-2xl shadow-sm border border-neutral-200 max-w-[800px] mx-auto text-sm"
-            style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
+            className="print-area bg-white text-neutral-900 p-8 sm:p-10 rounded-2xl shadow-sm border border-neutral-200/90 max-w-[794px] mx-auto text-sm print:shadow-none print:border-none print:p-0"
+            style={{ width: '100%', boxSizing: 'border-box', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
           >
             {/* 1. Header Banner */}
             <div className="border-b-2 border-neutral-900 pb-5 mb-6">

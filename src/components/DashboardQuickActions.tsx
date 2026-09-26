@@ -411,8 +411,8 @@ export default function DashboardQuickActions({
                       <FileDown className="w-3.5 h-3.5" />
                     </div>
                     <div>
-                      <span className="block font-semibold">Download Report</span>
-                      <span className="block text-[11px] text-neutral-400">Export KPI metrics as PDF</span>
+                      <span className="block font-semibold">Export Report</span>
+                      <span className="block text-[11px] text-neutral-400">Preview & export KPI metrics as PDF/Print</span>
                     </div>
                   </button>
                 )}
@@ -474,7 +474,7 @@ export default function DashboardQuickActions({
                     <div className="w-7 h-7 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center shrink-0">
                       <FileDown className="w-3.5 h-3.5" />
                     </div>
-                    <span>Download Report</span>
+                    <span>Export Report</span>
                   </button>
                 )}
               </motion.div>

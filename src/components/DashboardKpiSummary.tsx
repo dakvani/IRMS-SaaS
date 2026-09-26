@@ -57,10 +57,10 @@ export default function DashboardKpiSummary({ stats, onRefresh, onDownloadReport
             type="button"
             onClick={onDownloadReport}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200/90 bg-white hover:bg-neutral-50 text-neutral-800 text-xs font-semibold shadow-2xs hover:border-neutral-300 transition-all cursor-pointer active:scale-98"
-            title="Download KPI summary metrics as PDF"
+            title="Preview and export KPI summary report as PDF or print"
           >
             <FileDown className="w-3.5 h-3.5 text-orange-600" />
-            <span>Download Report</span>
+            <span>Export Report</span>
           </button>
         )}
       </div>

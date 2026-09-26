@@ -2,8 +2,12 @@ import React, { useEffect, useState } from 'react';
 import {
   X, User, Home, Bed, Building2, MapPin, Briefcase, Package, Truck,
   Calendar, Clock, ShieldCheck, FileText, Phone, Mail, Globe, CheckCircle2,
-  AlertCircle, Printer, ExternalLink, ChevronRight, Layers, Tag
+  AlertCircle, Printer, ExternalLink, ChevronRight, Layers, Tag, Plus, Eye,
+  FileDown
 } from 'lucide-react';
+import GccDocumentUploadModal from './GccDocumentUploadModal.tsx';
+import GccDocumentViewerModal from './GccDocumentViewerModal.tsx';
+import EmployeeDossierPdfModal from './EmployeeDossierPdfModal.tsx';
 
 interface EmployeeDossierModalProps {
   employeeId: number;
@@ -24,6 +28,9 @@ export default function EmployeeDossierModal({
   const [activeTab, setActiveTab] = useState<'overview' | 'accommodation' | 'assignments' | 'assets' | 'vehicles' | 'documents'>(
     initialTab as any
   );
+  const [isDocUploadOpen, setIsDocUploadOpen] = useState(false);
+  const [viewerDoc, setViewerDoc] = useState<any | null>(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen && employeeId) {
@@ -101,11 +108,12 @@ export default function EmployeeDossierModal({
 
           <div className="flex items-center gap-2">
             <button
-              onClick={handlePrint}
-              className="p-2 text-neutral-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors hidden sm:flex items-center gap-1.5 text-xs font-medium"
-              title="Print Dossier"
+              onClick={() => setIsPdfModalOpen(true)}
+              className="px-3.5 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl transition-all flex items-center gap-1.5 text-xs font-semibold border border-neutral-700 shadow-2xs cursor-pointer active:scale-98"
+              title="Preview and export employee report as PDF/Print"
             >
-              <Printer className="w-4 h-4" /> Print
+              <FileDown className="w-4 h-4 text-indigo-400" />
+              <span>Export</span>
             </button>
             <button
               onClick={onClose}
@@ -247,8 +255,8 @@ export default function EmployeeDossierModal({
                 </div>
               </div>
 
-              {/* Navigation Tabs */}
-              <div className="flex items-center gap-2 mt-5 border-t border-neutral-200/80 pt-4 overflow-x-auto no-scrollbar">
+              {/* Navigation Tabs - Bigger & Wider with Clear Badges */}
+              <div className="flex items-center gap-3 mt-5 border-t border-neutral-200/80 pt-4 overflow-x-auto no-scrollbar">
                 {[
                   { id: 'overview', label: 'Summary Overview', icon: Layers, count: null },
                   { id: 'accommodation', label: 'Staff Accommodation & History', icon: Home, count: accHistory.length },
@@ -263,17 +271,17 @@ export default function EmployeeDossierModal({
                     <button
                       key={t.id}
                       onClick={() => setActiveTab(t.id as any)}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
+                      className={`px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2.5 transition-all whitespace-nowrap cursor-pointer shadow-2xs ${
                         isActive
-                          ? 'bg-neutral-900 text-white shadow-sm'
+                          ? 'bg-neutral-900 text-white shadow-md'
                           : 'bg-white hover:bg-neutral-100 text-neutral-600 border border-neutral-200'
                       }`}
                     >
-                      <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-neutral-500'}`} />
-                      {t.label}
+                      <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-neutral-500'}`} />
+                      <span>{t.label}</span>
                       {t.count !== null && (
                         <span
-                          className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                          className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${
                             isActive ? 'bg-white/20 text-white' : 'bg-neutral-100 text-neutral-700'
                           }`}
                         >
@@ -885,34 +893,80 @@ export default function EmployeeDossierModal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Documents */}
                   <div className="bg-white rounded-2xl border border-neutral-200 p-4 shadow-xs">
-                    <h4 className="text-xs font-bold text-neutral-900 mb-3 flex items-center gap-1.5 pb-2 border-b border-neutral-100">
-                      <FileText className="w-4 h-4 text-neutral-500" /> Uploaded Documents ({docs.length})
-                    </h4>
+                    <div className="flex items-center justify-between pb-2 mb-3 border-b border-neutral-100">
+                      <h4 className="text-xs font-bold text-neutral-900 flex items-center gap-1.5">
+                        <FileText className="w-4 h-4 text-indigo-600" /> Uploaded Official Documents ({docs.length})
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => setIsDocUploadOpen(true)}
+                        className="px-2.5 py-1 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Document</span>
+                      </button>
+                    </div>
+
                     {docs.length > 0 ? (
                       <div className="space-y-2">
-                        {docs.map((d: any) => (
-                          <div key={d.id} className="p-3 rounded-xl bg-neutral-50 border border-neutral-100 text-xs flex items-center justify-between">
-                            <div>
-                              <span className="font-bold text-neutral-900 block">{d.documentType}</span>
-                              <span className="text-[11px] text-neutral-400">
-                                Exp: {d.expiryDate ? new Date(d.expiryDate).toLocaleDateString() : 'N/A'}
-                              </span>
+                        {docs.map((d: any) => {
+                          let isMultiPage = false;
+                          let docNum = '';
+                          try {
+                            if (d.documentUrl?.startsWith('{')) {
+                              const parsed = JSON.parse(d.documentUrl);
+                              if (parsed.firstPageUrl && parsed.secondPageUrl) isMultiPage = true;
+                              docNum = parsed.documentNumber || '';
+                            }
+                          } catch {}
+
+                          return (
+                            <div key={d.id} className="p-3 rounded-xl bg-neutral-50 border border-neutral-200/80 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 hover:bg-indigo-50/20 transition-colors">
+                              <div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-bold text-neutral-900">{d.documentType}</span>
+                                  {docNum && (
+                                    <span className="font-mono text-[10px] font-bold text-neutral-600 bg-white px-1.5 py-0.2 rounded border border-neutral-200">
+                                      #{docNum}
+                                    </span>
+                                  )}
+                                  {isMultiPage && (
+                                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                                      <Layers className="w-3 h-3 text-emerald-600" /> Page 1 & 2 Attached
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[11px] text-neutral-500 mt-0.5 block">
+                                  Expires: <strong className="text-neutral-700">{d.expiryDate ? new Date(d.expiryDate).toLocaleDateString() : 'N/A'}</strong>
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setViewerDoc(d)}
+                                  className="px-2.5 py-1 bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-200 rounded-lg text-xs font-bold shadow-2xs flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Eye className="w-3.5 h-3.5 text-indigo-600" />
+                                  <span>Inspect</span>
+                                </button>
+                                {d.documentUrl && !d.documentUrl.startsWith('{') && (
+                                  <a
+                                    href={d.documentUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-neutral-400 hover:text-indigo-600 p-1"
+                                  >
+                                    <ExternalLink className="w-4 h-4" />
+                                  </a>
+                                )}
+                              </div>
                             </div>
-                            {d.documentUrl && (
-                              <a
-                                href={d.documentUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-blue-600 hover:text-blue-800 p-1.5"
-                              >
-                                <ExternalLink className="w-4 h-4" />
-                              </a>
-                            )}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     ) : (
-                      <p className="text-xs text-neutral-400 py-6 text-center">No documents uploaded.</p>
+                      <p className="text-xs text-neutral-400 py-6 text-center">No official documents recorded yet.</p>
                     )}
                   </div>
 
@@ -980,6 +1034,31 @@ export default function EmployeeDossierModal({
           </button>
         </div>
       </div>
+
+      {/* Official Saudi & GCC Document Upload Modal */}
+      <GccDocumentUploadModal
+        isOpen={isDocUploadOpen}
+        onClose={() => setIsDocUploadOpen(false)}
+        employeeId={employeeId}
+        employeeName={emp ? `${emp.firstName} ${emp.lastName}` : ''}
+        onSuccess={() => fetchDossier()}
+      />
+
+      {/* Official Saudi & GCC Document Viewer Modal */}
+      <GccDocumentViewerModal
+        isOpen={!!viewerDoc}
+        onClose={() => setViewerDoc(null)}
+        document={viewerDoc}
+        employeeName={emp ? `${emp.firstName} ${emp.lastName}` : ''}
+      />
+
+      {/* Employee 360° Master Dossier PDF Export & Preview Modal */}
+      <EmployeeDossierPdfModal
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        employee={emp}
+        dossierData={data}
+      />
     </div>
   );
 }

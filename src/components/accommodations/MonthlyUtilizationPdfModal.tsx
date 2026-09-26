@@ -2,6 +2,7 @@ import React, { useState, useRef, useMemo } from 'react';
 import { X, FileDown, Printer, Filter, Calendar, MapPin, Building2, Bed, Users, ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import { sanitizeDocumentOklch } from '../../utils/pdfColorSanitizer.ts';
+import { printElement } from '../../utils/printElement.ts';
 
 interface MonthlyUtilizationPdfModalProps {
   isOpen: boolean;
@@ -109,8 +110,19 @@ export default function MonthlyUtilizationPdfModal({
     }
   };
 
+  const [printStatus, setPrintStatus] = useState<string | null>(null);
+
   const handlePrint = () => {
-    window.print();
+    if (reportRef.current) {
+      setPrintStatus('Opening Printer...');
+      printElement(reportRef.current, `IRMS_Accommodation_Report_${selectedMonth}`);
+      setTimeout(() => {
+        setPrintStatus('Print Dialog Ready');
+        setTimeout(() => setPrintStatus(null), 2500);
+      }, 400);
+    } else {
+      window.print();
+    }
   };
 
   return (
@@ -137,11 +149,11 @@ export default function MonthlyUtilizationPdfModal({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200 rounded-xl transition-colors text-xs font-semibold flex items-center gap-1.5"
-              title="Print Report"
+              className="px-3.5 py-2 border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-800 rounded-xl transition-colors text-xs font-semibold flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              title="Print document directly to printer"
             >
-              <Printer className="w-4 h-4" />
-              Print
+              <Printer className="w-4 h-4 text-orange-600" />
+              <span>{printStatus || 'Print to Printer'}</span>
             </button>
             <button
               onClick={handleDownloadPdf}
@@ -211,7 +223,7 @@ export default function MonthlyUtilizationPdfModal({
         <div className="flex-1 overflow-y-auto p-6 bg-neutral-100 custom-scrollbar">
           <div
             ref={reportRef}
-            className="p-8 md:p-10 rounded-2xl shadow-md border text-neutral-900 mx-auto max-w-[210mm] min-h-[297mm] font-sans"
+            className="print-area p-8 md:p-10 rounded-2xl shadow-md border text-neutral-900 mx-auto max-w-[210mm] min-h-[297mm] font-sans print:shadow-none print:border-none print:p-0"
             style={{ width: '100%', backgroundColor: '#ffffff', color: '#111827', borderColor: '#e5e7eb' }}
           >
             {/* Formal Report Header */}

@@ -95,22 +95,55 @@ html.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #A3A3A3;
 }
 
+/* Direct Print Portal Styles */
+#irms-direct-print-portal {
+  display: none;
+}
+
 @media print {
-  body { background-color: white !important; }
+  body {
+    background-color: white !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
   * { 
     -webkit-print-color-adjust: exact !important; 
     print-color-adjust: exact !important; 
   }
-}
 
-@media print {
-  body * {
+  /* When printing directly via IRMS portal, isolate portal completely */
+  body.irms-printing-active > *:not(#irms-direct-print-portal) {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  body.irms-printing-active #irms-direct-print-portal {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 210mm !important;
+    margin: 0 auto !important;
+    padding: 10mm 12mm !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  body.irms-printing-active #irms-direct-print-portal * {
+    visibility: visible !important;
+  }
+
+  /* General print utility fallback */
+  body:not(.irms-printing-active) * {
     visibility: hidden;
   }
-  .print-area, .print-area * {
+  body:not(.irms-printing-active) .print-area,
+  body:not(.irms-printing-active) .print-area * {
     visibility: visible;
   }
-  .print-area {
+  body:not(.irms-printing-active) .print-area {
     position: absolute;
     left: 0;
     top: 0;
@@ -118,7 +151,22 @@ html.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     margin: 0;
     padding: 0;
   }
+
   .no-print {
     display: none !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 10mm 10mm 12mm 10mm;
+  }
+
+  table, tr, td, th, .pdf-card {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  thead {
+    display: table-header-group !important;
   }
 }

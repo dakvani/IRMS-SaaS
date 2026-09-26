@@ -32,6 +32,26 @@ export default function Landing() {
     }
   };
 
+  const handleQuickAdminAccess = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/auth/demo-login', { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to authenticate admin session');
+      const data = await res.json();
+      if (data?.token) {
+        (window as any)._token = data.token;
+        localStorage.setItem('irms_token', data.token);
+        window.dispatchEvent(new CustomEvent('auth-token-updated', { detail: { token: data.token } }));
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Unable to access workspace');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -46,6 +66,7 @@ export default function Landing() {
       }
       if (result) {
         (window as any)._token = result.accessToken;
+        localStorage.setItem('irms_token', result.accessToken);
         navigate('/dashboard');
       }
     } catch (err: any) {
@@ -127,6 +148,23 @@ export default function Landing() {
                   <p className="text-neutral-500 mb-8 font-medium">Choose how you would like to continue.</p>
 
                   <div className="space-y-4">
+                    <button 
+                      onClick={handleQuickAdminAccess}
+                      disabled={isLoading}
+                      className="w-full flex items-center justify-between p-4 bg-neutral-900 text-white rounded-2xl hover:bg-neutral-800 transition-all group shadow-sm disabled:opacity-50 cursor-pointer text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="bg-neutral-800 p-2 rounded-lg group-hover:bg-neutral-700 transition-colors">
+                          <ShieldCheck className="w-5 h-5 text-indigo-400" />
+                        </div>
+                        <div>
+                          <span className="block font-bold text-sm text-white">Enter Workspace (Super Admin)</span>
+                          <span className="block text-xs text-neutral-400">Muhammed Dakvan I · IRMS Organization</span>
+                        </div>
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-neutral-400 group-hover:text-white transition-colors" />
+                    </button>
+
                     <button 
                       onClick={() => setAuthMode('signup')}
                       className="w-full flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-neutral-900 hover:bg-neutral-50 transition-all group"

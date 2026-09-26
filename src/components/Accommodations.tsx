@@ -462,10 +462,11 @@ export default function Accommodations() {
               setPdfInitialLocation('');
               setIsPdfModalOpen(true);
             }}
-            className="bg-white hover:bg-neutral-50 text-neutral-800 border border-neutral-200 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors"
+            className="bg-white hover:bg-neutral-50 text-neutral-800 border border-neutral-200 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+            title="Preview and export monthly utilization report"
           >
             <FileDown className="w-4 h-4 text-orange-600" />
-            Monthly PDF Report
+            <span>Export Report</span>
           </button>
           <button
             onClick={() => openAdmitModal()}

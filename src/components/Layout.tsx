@@ -69,10 +69,50 @@ export default function Layout() {
   }, [dbUser]);
 
   useEffect(() => {
+    // Check if there is an existing valid session in storage
+    const storedToken = localStorage.getItem('irms_token') || (window as any)._token;
+    if (storedToken) {
+      (window as any)._token = storedToken;
+      fetch('/api/me', {
+        headers: { 'Authorization': `Bearer ${storedToken}` }
+      })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.user) {
+          setDbUser(data.user);
+          (window as any)._dbUser = data.user;
+          setNeedsAuth(false);
+          setIsLoading(false);
+        }
+      })
+      .catch(() => {});
+    }
+
+    const handleAuthTokenUpdated = async (e: any) => {
+      const token = e.detail?.token || localStorage.getItem('irms_token');
+      if (token) {
+        (window as any)._token = token;
+        try {
+          const res = await fetch('/api/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setDbUser(data.user);
+            (window as any)._dbUser = data.user;
+            setNeedsAuth(false);
+          }
+        } catch (err) {}
+        setIsLoading(false);
+      }
+    };
+    window.addEventListener('auth-token-updated', handleAuthTokenUpdated);
+
     const unsubscribe = initAuth(
       async (currentUser, token) => {
         setUser(currentUser);
         (window as any)._token = token;
+        localStorage.setItem('irms_token', token);
         
         try {
           const res = await fetch('/api/me', {
@@ -91,22 +131,40 @@ export default function Layout() {
         setIsLoading(false);
       },
       () => {
-        setUser(null);
-        setDbUser(null);
-        setNeedsAuth(true);
+        const activeLocalToken = localStorage.getItem('irms_token') || (window as any)._token;
+        if (!activeLocalToken) {
+          setUser(null);
+          setDbUser(null);
+          setNeedsAuth(true);
+          (window as any)._token = null;
+          (window as any)._dbUser = null;
+        }
         setIsLoading(false);
-        (window as any)._token = null;
-        (window as any)._dbUser = null;
       }
     );
-    return () => unsubscribe();
+
+    // Timeout safety: prevent getting stuck in loading spinner
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('auth-token-updated', handleAuthTokenUpdated);
+      clearTimeout(timer);
+    };
   }, []);
 
   const handleLogout = async () => {
-    await logout();
+    try {
+      await logout();
+    } catch(e) {}
+    localStorage.removeItem('irms_token');
     setUser(null);
+    setDbUser(null);
     setNeedsAuth(true);
     (window as any)._token = null;
+    (window as any)._dbUser = null;
     navigate('/');
   };
 
@@ -159,12 +217,20 @@ export default function Layout() {
       )}
       <header className="bg-white border-b border-neutral-100 sticky top-0 z-10 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-neutral-900 text-white p-2.5 rounded-xl">
+          <NavLink
+            to="/dashboard"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/dashboard');
+            }}
+            className="flex items-center gap-3 cursor-pointer group hover:opacity-90 transition-opacity"
+            title="Return to Dashboard"
+          >
+            <div className="bg-neutral-900 text-white p-2.5 rounded-xl group-hover:scale-105 transition-transform shadow-xs">
               <LayoutDashboard className="w-5 h-5" />
             </div>
-            <h1 className="font-bold text-xl tracking-tight text-neutral-950">IRMS SaaS</h1>
-          </div>
+            <span className="font-bold text-xl tracking-tight text-neutral-950">IRMS SaaS</span>
+          </NavLink>
           
           <GlobalSearch />
 

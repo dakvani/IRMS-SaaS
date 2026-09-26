@@ -7,6 +7,7 @@ import EmployeeDossierModal from './EmployeeDossierModal.tsx';
 import DashboardKpiSummary from './DashboardKpiSummary.tsx';
 import DashboardQuickActions from './DashboardQuickActions.tsx';
 import KpiSummaryPdfModal from './KpiSummaryPdfModal.tsx';
+import DashboardUniversalSearch from './DashboardUniversalSearch.tsx';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -144,10 +145,10 @@ export default function Dashboard() {
             type="button"
             onClick={() => setIsPdfModalOpen(true)}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-neutral-50 text-neutral-800 text-xs sm:text-sm font-semibold border border-neutral-200/90 shadow-2xs hover:border-neutral-300 transition-all cursor-pointer active:scale-98"
-            title="Download Executive KPI Summary Report as PDF"
+            title="Preview and export Executive KPI Summary Report as PDF or print"
           >
             <FileDown className="w-4 h-4 text-orange-600" />
-            <span>Download Report</span>
+            <span>Export Report</span>
           </button>
 
           <DashboardQuickActions
@@ -168,128 +169,15 @@ export default function Dashboard() {
         />
       </motion.div>
 
-      {/* 360° Personnel & Master Operations Search Bar */}
-      <motion.div variants={item} className="bg-white p-5 rounded-3xl border border-neutral-200/90 shadow-sm space-y-3">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
-              <Search className="w-4 h-4 text-orange-500" />
-              Master Personnel Search & 360° Dossier Lookup
-            </h2>
-            <p className="text-xs text-neutral-500">
-              Input any employee name or ID to list all data belongs to him: assignments, asset history, vehicles, and housing stays.
-            </p>
-          </div>
-          {employeeSearch && (
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-orange-50 text-orange-800 border border-orange-200">
-              {filteredPersonnel.length} matching {filteredPersonnel.length === 1 ? 'employee' : 'employees'}
-            </span>
-          )}
-        </div>
+      {/* Universal Operations Primary Search & 360° Records Explorer */}
+      <DashboardUniversalSearch
+        onOpenDossier={(empId) => {
+          setSelectedDossierEmpId(empId);
+          setIsDossierOpen(true);
+        }}
+      />
 
-        <div className="relative w-full">
-          <Search className="w-4 h-4 absolute left-4 top-3.5 text-neutral-400" />
-          <input
-            type="text"
-            placeholder="Type employee name, badge ID (e.g. EMP-101), department, or phone number..."
-            className="w-full pl-11 pr-10 py-3 text-sm border border-neutral-200 rounded-2xl bg-neutral-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 text-neutral-900 placeholder:text-neutral-400 transition-all font-medium"
-            value={employeeSearch}
-            onChange={(e) => setEmployeeSearch(e.target.value)}
-          />
-          {employeeSearch && (
-            <button
-              onClick={() => setEmployeeSearch('')}
-              className="absolute right-3.5 top-3 text-neutral-400 hover:text-neutral-600 p-1 rounded-full hover:bg-neutral-100"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
 
-        {/* Live Search Suggestions & 360 Records Preview */}
-        {employeeSearch && employeeSearch.trim().length >= 2 && (
-          <div className="pt-3 border-t border-neutral-100 space-y-2">
-            {filteredPersonnel.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-80 overflow-y-auto custom-scrollbar p-1">
-                {filteredPersonnel.map((emp: any) => (
-                  <div
-                    key={emp.id}
-                    onClick={() => {
-                      setSelectedDossierEmpId(emp.id);
-                      setIsDossierOpen(true);
-                    }}
-                    className="p-3.5 rounded-2xl border border-neutral-200/90 bg-neutral-50/60 hover:bg-orange-50/50 hover:border-orange-200 transition-all cursor-pointer flex items-center justify-between group"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-neutral-900 text-white font-bold flex items-center justify-center text-xs shrink-0 group-hover:bg-orange-600 transition-colors">
-                        {emp.firstName?.[0] || 'E'}{emp.lastName?.[0] || ''}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-neutral-900 truncate">
-                            {emp.firstName} {emp.lastName}
-                          </span>
-                          <span className="font-mono text-xs font-semibold text-neutral-600 bg-white px-2 py-0.5 rounded-md border border-neutral-200 shrink-0">
-                            {emp.employeeId}
-                          </span>
-                        </div>
-                        <p className="text-xs text-neutral-500 truncate mt-0.5">
-                          {emp.jobTitle || 'Technician'} • {emp.department || 'Operations'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      className="px-3 py-1.5 bg-neutral-900 text-white group-hover:bg-orange-600 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-1 shadow-2xs transition-colors ml-2"
-                    >
-                      <User className="w-3.5 h-3.5" /> View All Data
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="p-6 text-center text-xs text-neutral-400 bg-neutral-50 rounded-2xl border border-dashed border-neutral-200">
-                No employees found matching "{employeeSearch}". Try a different name or badge ID.
-              </div>
-            )}
-          </div>
-        )}
-      </motion.div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard 
-          title="Total Workforce" 
-          value={stats.totalEmployees} 
-          icon={<Users className="w-6 h-6 text-indigo-600" />} 
-          trend="+12%" 
-          bg="bg-indigo-50" 
-          variants={item} 
-        />
-        <StatCard 
-          title="Active Sites" 
-          value={stats.totalSites} 
-          icon={<MapPin className="w-6 h-6 text-emerald-600" />} 
-          trend="+3%" 
-          bg="bg-emerald-50" 
-          variants={item} 
-        />
-        <StatCard 
-          title="Ongoing Projects" 
-          value={stats.totalProjects} 
-          icon={<Briefcase className="w-6 h-6 text-blue-600" />} 
-          trend="Steady" 
-          bg="bg-blue-50" 
-          variants={item} 
-        />
-        <StatCard 
-          title="Managed Assets" 
-          value={stats.totalAssets} 
-          icon={<Package className="w-6 h-6 text-orange-600" />} 
-          trend="+5%" 
-          bg="bg-orange-50" 
-          variants={item} 
-        />
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 flex flex-col gap-6">

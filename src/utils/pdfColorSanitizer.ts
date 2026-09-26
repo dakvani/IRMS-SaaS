@@ -5,26 +5,31 @@
  */
 
 export function parseOklchToRgb(str: string): string {
-  if (!str || !str.includes('oklch')) return str;
+  if (!str || (!str.includes('oklch') && !str.includes('oklab'))) return str;
 
   return str.replace(/oklch\(\s*([^()]+)\)/gi, (_match, inner) => {
     try {
-      const parts = inner.trim().split(/\s+/);
-      if (parts.length < 3) return '#333333';
-
-      let lStr = parts[0];
-      let cStr = parts[1];
-      let hStr = parts[2];
+      // Split by whitespace or slash
+      const cleanInner = inner.trim();
+      let lStr = '0';
+      let cStr = '0';
+      let hStr = '0';
       let aStr: string | undefined = undefined;
 
-      // Handle slash notation for alpha: e.g. "0.205 0 0 / 0.8" or "0.205 0 0 / 80%"
-      if (inner.includes('/')) {
-        const slashSplit = inner.split('/');
+      // Handle slash notation for alpha: e.g. "0.205 0 0 / 0.8" or "0.205 0 0/80%"
+      if (cleanInner.includes('/')) {
+        const slashSplit = cleanInner.split('/');
         const mainParts = slashSplit[0].trim().split(/\s+/);
         lStr = mainParts[0] || '0';
         cStr = mainParts[1] || '0';
         hStr = mainParts[2] || '0';
         aStr = slashSplit[1]?.trim();
+      } else {
+        const parts = cleanInner.split(/\s+/);
+        lStr = parts[0] || '0';
+        cStr = parts[1] || '0';
+        hStr = parts[2] || '0';
+        aStr = parts[3];
       }
 
       let alpha = 1;
@@ -41,8 +46,21 @@ export function parseOklchToRgb(str: string): string {
         if (isNaN(L)) L = 0;
       }
 
-      const C = cStr && cStr !== 'none' ? parseFloat(cStr) || 0 : 0;
-      const H = hStr && hStr !== 'none' ? parseFloat(hStr) || 0 : 0;
+      let C = 0;
+      if (cStr && cStr !== 'none') {
+        if (cStr.endsWith('%')) C = parseFloat(cStr) / 100;
+        else C = parseFloat(cStr);
+        if (isNaN(C)) C = 0;
+      }
+
+      let H = 0;
+      if (hStr && hStr !== 'none') {
+        if (hStr.endsWith('deg')) H = parseFloat(hStr);
+        else if (hStr.endsWith('rad')) H = (parseFloat(hStr) * 180) / Math.PI;
+        else if (hStr.endsWith('turn')) H = parseFloat(hStr) * 360;
+        else H = parseFloat(hStr);
+        if (isNaN(H)) H = 0;
+      }
 
       const hRad = (H * Math.PI) / 180;
       const aCoord = C * Math.cos(hRad);
@@ -81,21 +99,55 @@ export function parseOklchToRgb(str: string): string {
 
 /**
  * Sanitizes an entire document (e.g. clonedDoc in html2canvas onclone)
- * to ensure no element or stylesheet has oklch colors.
+ * to ensure no element, stylesheet, or pseudo-element retains oklch colors.
  */
 export function sanitizeDocumentOklch(doc: Document): void {
-  // 1. Sanitize all <style> tags text content
+  // 1. Explicitly sanitize document root & body backgrounds
+  if (doc.documentElement) {
+    doc.documentElement.style.backgroundColor = '#ffffff';
+    doc.documentElement.style.color = '#171717';
+  }
+  if (doc.body) {
+    doc.body.style.backgroundColor = '#ffffff';
+    doc.body.style.color = '#171717';
+  }
+
+  // 2. Sanitize all <style> tags text content
   doc.querySelectorAll('style').forEach((styleTag) => {
     if (styleTag.textContent && styleTag.textContent.includes('oklch')) {
       styleTag.textContent = parseOklchToRgb(styleTag.textContent);
     }
   });
 
-  // 2. Add an explicit reset stylesheet into doc.head to override pseudo-elements (*::before, *::after)
+  // 3. Inject a global override stylesheet to remap Tailwind v4 variables and clear pseudo-elements
   try {
     const overrideStyle = doc.createElement('style');
     overrideStyle.setAttribute('type', 'text/css');
     overrideStyle.textContent = `
+      :root, * {
+        --color-neutral-50: #fafafa !important;
+        --color-neutral-100: #f5f5f5 !important;
+        --color-neutral-200: #e5e5e5 !important;
+        --color-neutral-300: #d4d4d4 !important;
+        --color-neutral-400: #a3a3a3 !important;
+        --color-neutral-500: #737373 !important;
+        --color-neutral-600: #525252 !important;
+        --color-neutral-700: #404040 !important;
+        --color-neutral-800: #262626 !important;
+        --color-neutral-900: #171717 !important;
+        --color-neutral-950: #0a0a0a !important;
+        --color-blue-500: #3b82f6 !important;
+        --color-blue-600: #2563eb !important;
+        --color-blue-700: #1d4ed8 !important;
+        --color-indigo-500: #6366f1 !important;
+        --color-indigo-600: #4f46e5 !important;
+        --color-emerald-500: #10b981 !important;
+        --color-emerald-600: #059669 !important;
+        --color-amber-500: #f59e0b !important;
+        --color-rose-500: #f43f5e !important;
+        --color-white: #ffffff !important;
+        --color-black: #000000 !important;
+      }
       *, *::before, *::after {
         border-color: #e5e5e5 !important;
         outline-color: transparent !important;
@@ -108,32 +160,7 @@ export function sanitizeDocumentOklch(doc: Document): void {
     // ignore
   }
 
-  // 3. Fallback canvas context for browser native conversion
-  let canvasCtx: CanvasRenderingContext2D | null = null;
-  try {
-    const canvas = doc.createElement('canvas');
-    canvasCtx = canvas.getContext('2d');
-  } catch {
-    // ignore
-  }
-
-  const convertVal = (val: string): string => {
-    if (!val || !val.includes('oklch')) return val;
-    if (canvasCtx) {
-      try {
-        canvasCtx.fillStyle = '#000000';
-        canvasCtx.fillStyle = val;
-        if (canvasCtx.fillStyle && !canvasCtx.fillStyle.includes('oklch')) {
-          return canvasCtx.fillStyle;
-        }
-      } catch {
-        // fallback
-      }
-    }
-    return parseOklchToRgb(val);
-  };
-
-  // 4. Walk all elements in the document and sanitize computed styles
+  // 4. Walk all elements in the document and sanitize computed and inline styles
   const win = doc.defaultView || window;
   const elements = doc.querySelectorAll('*');
   const colorProps = [
@@ -147,19 +174,26 @@ export function sanitizeDocumentOklch(doc: Document): void {
     'outline-color',
     'text-decoration-color',
     'fill',
-    'stroke'
+    'stroke',
+    'caret-color'
   ];
 
   elements.forEach((el) => {
     const hEl = el as HTMLElement;
     if (!hEl.style) return;
 
+    // Sanitize any existing inline style attribute
+    const inlineStyle = hEl.getAttribute('style');
+    if (inlineStyle && inlineStyle.includes('oklch')) {
+      hEl.setAttribute('style', parseOklchToRgb(inlineStyle));
+    }
+
     try {
       const comp = win.getComputedStyle(hEl);
       for (const prop of colorProps) {
         const val = comp.getPropertyValue(prop);
         if (val && val.includes('oklch')) {
-          hEl.style.setProperty(prop, convertVal(val), 'important');
+          hEl.style.setProperty(prop, parseOklchToRgb(val), 'important');
         }
       }
 
@@ -167,6 +201,18 @@ export function sanitizeDocumentOklch(doc: Document): void {
       const shadow = comp.getPropertyValue('box-shadow');
       if (shadow && shadow.includes('oklch')) {
         hEl.style.setProperty('box-shadow', 'none', 'important');
+      }
+
+      // For SVG elements, ensure fill and stroke attributes are clean
+      if (el instanceof SVGElement) {
+        const fill = el.getAttribute('fill');
+        if (fill && fill.includes('oklch')) {
+          el.setAttribute('fill', parseOklchToRgb(fill));
+        }
+        const stroke = el.getAttribute('stroke');
+        if (stroke && stroke.includes('oklch')) {
+          el.setAttribute('stroke', parseOklchToRgb(stroke));
+        }
       }
     } catch {
       // ignore

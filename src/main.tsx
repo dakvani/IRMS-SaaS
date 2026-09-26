@@ -15,6 +15,14 @@ import Accommodations from './components/Accommodations.tsx';
 import Settings from './components/Settings.tsx';
 import './index.css';
 
+// Restore auth token immediately before any component mounts
+try {
+  const savedToken = localStorage.getItem('irms_token');
+  if (savedToken) {
+    (window as any)._token = savedToken;
+  }
+} catch (e) {}
+
 // Google Maps Platform Demo Key Quota Defense
 (window as any).gm_authFailure = () => {
   window.dispatchEvent(new CustomEvent('gmp-quota-exceeded'));

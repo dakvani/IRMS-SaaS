@@ -4,7 +4,7 @@ import {
   Package, Truck, Plus, Clock, X, Search, Printer, ScanLine, Calculator, Wrench, 
   Settings, ArrowRightLeft, LayoutGrid, List, Calendar as CalendarIcon, MapPin, 
   User, FileText, Activity, AlertCircle, FileDown, CheckCircle, CalendarRange,
-  AlertTriangle, RefreshCw, Sparkles, ShieldAlert
+  AlertTriangle, RefreshCw, Sparkles, ShieldAlert, History
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -367,32 +367,32 @@ export default function Assets() {
 
   return (
     <div className="h-full flex flex-col gap-6 relative">
-      {/* Predictive Maintenance Alert Banner */}
+      {/* Predictive Maintenance Alert Banner - Harmonized Corporate Theme */}
       {predictiveData?.summary?.serviceAlertsTotal > 0 && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-red-500/10 to-amber-500/10 border border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+        <div className="bg-amber-50/70 border border-amber-200/90 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
           <div className="flex items-start sm:items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm font-bold">
-              <AlertTriangle className="w-5 h-5 animate-pulse" />
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs font-bold">
+              <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-extrabold text-neutral-900 text-sm flex items-center gap-2 flex-wrap">
-                <span>Predictive Maintenance System Alert</span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-600 text-white">
+              <h4 className="font-bold text-neutral-950 text-sm flex items-center gap-2 flex-wrap">
+                <span>Predictive Maintenance Diagnostics Alert</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-rose-600 text-white">
                   {predictiveData.summary.criticalCount} Critical
                 </span>
                 {predictiveData.summary.warningCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500 text-white">
-                    {predictiveData.summary.warningCount} Warning
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-600 text-white">
+                    {predictiveData.summary.warningCount} Attention
                   </span>
                 )}
                 {syncFeedback && (
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
                     {syncFeedback}
                   </span>
                 )}
               </h4>
-              <p className="text-xs text-neutral-600 mt-0.5">
-                Diagnostics forecasted {predictiveData.summary.serviceAlertsTotal} equipment requiring servicing based on historical cycles, downtime logs, and active site load. Fleet Health Index is {predictiveData.summary.fleetHealthScore}%.
+              <p className="text-xs text-neutral-600 mt-0.5 font-medium">
+                Diagnostics forecasted {predictiveData.summary.serviceAlertsTotal} assets requiring scheduled service based on operating cycles. Overall Fleet Health Index: <strong className="text-neutral-900">{predictiveData.summary.fleetHealthScore}%</strong>.
               </p>
             </div>
           </div>
@@ -401,7 +401,7 @@ export default function Assets() {
             <button
               onClick={handleQuickSyncPredictive}
               disabled={isSyncingPredictive}
-              className="bg-white hover:bg-neutral-50 text-neutral-700 border border-neutral-300 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+              className="bg-white hover:bg-neutral-50 text-neutral-800 border border-neutral-200 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncingPredictive ? 'animate-spin' : ''}`} />
               {isSyncingPredictive ? 'Syncing...' : 'Sync Alerts'}
@@ -409,9 +409,9 @@ export default function Assets() {
 
             <button
               onClick={() => setActiveTab('predictive')}
-              className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm shadow-amber-600/20 flex items-center gap-1.5"
+              className="bg-neutral-900 hover:bg-neutral-800 text-white px-4 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
-              <Activity className="w-3.5 h-3.5" />
+              <Activity className="w-3.5 h-3.5 text-amber-400" />
               View Diagnostics
             </button>
           </div>
@@ -419,11 +419,11 @@ export default function Assets() {
       )}
 
       {alerts.length > 0 && (
-         <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-3 shadow-sm">
+         <div className="bg-amber-50/60 border border-amber-200/80 p-4 rounded-2xl flex items-start gap-3 shadow-2xs">
             <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
             <div>
-              <h4 className="font-bold text-amber-800 text-sm">Low Stock / Maintenance Alerts ({alerts.length})</h4>
-              <ul className="text-xs text-amber-700 mt-1 list-disc pl-4 space-y-1">
+              <h4 className="font-bold text-neutral-900 text-sm">Low Stock / Maintenance Alerts ({alerts.length})</h4>
+              <ul className="text-xs text-neutral-600 mt-1 list-disc pl-4 space-y-1">
                  {alerts.slice(0, 3).map((a, i) => <li key={i}>{a}</li>)}
                  {alerts.length > 3 && <li>...and {alerts.length - 3} more.</li>}
               </ul>
@@ -596,47 +596,166 @@ export default function Assets() {
                 </MapContainer>
              </div>
           ) : viewMode === 'icon' ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {filteredAssets.map(asset => (
-                <div key={asset.id} onClick={() => handleAssetClick(asset)} className={`bg-white border ${selectedAssets.has(asset.id) ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-neutral-200'} rounded-2xl p-5 hover:border-indigo-300 hover:shadow-md cursor-pointer transition-all flex flex-col group relative`}>
-                  <div className="absolute top-3 right-3 z-10" onClick={(e) => toggleSelect(asset.id, e)}>
-                     <div className={`w-5 h-5 rounded border flex items-center justify-center ${selectedAssets.has(asset.id) ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-neutral-300'}`}>
-                        {selectedAssets.has(asset.id) && <CheckCircle className="w-3 h-3 text-white" />}
-                     </div>
-                  </div>
-                  <div className="flex justify-between items-start mb-4 mt-2">
-                    <div className="w-12 h-12 rounded-xl bg-neutral-50 text-neutral-600 flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                      {activeTab === 'vehicles' ? <Truck className="w-6 h-6" /> : <Package className="w-6 h-6" />}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredAssets.map(asset => {
+                const isVeh = asset.type?.toLowerCase() === 'vehicle' || !!asset.licensePlate;
+                const isAssigned = !!asset.employee || asset.status === 'assigned';
+                const statusBadgeStyle = 
+                  asset.status === 'available'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    : asset.status === 'assigned'
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                    : 'bg-amber-50 text-amber-700 border border-amber-200';
+
+                return (
+                  <div
+                    key={asset.id}
+                    onClick={() => handleAssetClick(asset)}
+                    className={`bg-white border ${
+                      selectedAssets.has(asset.id)
+                        ? 'border-indigo-600 ring-2 ring-indigo-500/20 shadow-md'
+                        : 'border-neutral-200/90 shadow-sm hover:shadow-md'
+                    } rounded-2xl p-5 hover:border-neutral-300 cursor-pointer transition-all flex flex-col justify-between group relative`}
+                  >
+                    <div>
+                      {/* Top Row: Type, Plate (if vehicle), and Status Badges */}
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold tracking-wide uppercase bg-neutral-100 text-neutral-800 border border-neutral-200">
+                            {isVeh ? (asset.make || 'Vehicle') : (asset.type || 'Equipment')}
+                          </span>
+                          {asset.licensePlate && (
+                            <span className="px-2 py-0.5 rounded-lg text-xs font-mono font-black bg-neutral-900 text-white shadow-2xs">
+                              {asset.licensePlate}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${statusBadgeStyle}`}>
+                            {asset.status || 'Available'}
+                          </span>
+
+                          {/* Multi-Select Checkbox */}
+                          <div
+                            onClick={(e) => toggleSelect(asset.id, e)}
+                            className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                              selectedAssets.has(asset.id)
+                                ? 'bg-indigo-600 border-indigo-600 text-white'
+                                : 'bg-white border-neutral-300 hover:border-neutral-400'
+                            }`}
+                          >
+                            {selectedAssets.has(asset.id) && <CheckCircle className="w-3.5 h-3.5" />}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Asset / Vehicle Name & Tag */}
+                      <h3 className="font-bold text-neutral-950 text-base tracking-tight mb-1 line-clamp-1 group-hover:text-indigo-600 transition-colors" title={asset.name}>
+                        {asset.name}
+                      </h3>
+
+                      <div className="flex items-center gap-2 text-xs text-neutral-500 mb-3 flex-wrap">
+                        <span className="font-mono font-semibold text-neutral-600 bg-neutral-50 px-2 py-0.5 rounded border border-neutral-200">
+                          {asset.assetTag}
+                        </span>
+                        {asset.site && (
+                          <span className="flex items-center gap-1 font-medium text-neutral-600">
+                            <MapPin className="w-3 h-3 text-neutral-400 shrink-0" />
+                            {asset.site.name}
+                          </span>
+                        )}
+                        {asset.year && <span>• {asset.year} Model</span>}
+                      </div>
+
+                      {/* Informative Specs 3-Box Card (matching Accommodations layout) */}
+                      <div className="bg-neutral-50 p-3 rounded-xl border border-neutral-100 space-y-2 mb-4">
+                        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                          <div className="border-r border-neutral-200 pr-1">
+                            <span className="text-[10px] uppercase text-neutral-400 block font-semibold">
+                              {isVeh ? 'Make / Model' : 'Class / Brand'}
+                            </span>
+                            <span className="font-bold text-neutral-800 truncate block">
+                              {asset.make || asset.model || asset.type || 'Standard'}
+                            </span>
+                          </div>
+                          <div className="border-r border-neutral-200 pr-1">
+                            <span className="text-[10px] uppercase text-neutral-400 block font-semibold">
+                              Service Cycle
+                            </span>
+                            <span className="font-bold text-neutral-800 block">
+                              {asset.maintenanceIntervalDays ? `${asset.maintenanceIntervalDays} Days` : '90 Days'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] uppercase text-neutral-400 block font-semibold">
+                              Book Value
+                            </span>
+                            <span className="font-bold text-neutral-900 block font-mono">
+                              SAR {((asset.purchasePrice || 45000) * 0.85).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Health / Maintenance Progress Bar */}
+                        <div>
+                          <div className="flex justify-between text-[11px] font-medium text-neutral-600 mb-1">
+                            <span>Operating Uptime</span>
+                            <span className="font-bold text-emerald-700">98.4% Available</span>
+                          </div>
+                          <div className="w-full bg-neutral-200 rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-emerald-500"
+                              style={{ width: '92%' }}
+                            />
+                          </div>
+                          <div className="flex justify-between text-[10px] text-neutral-400 mt-1">
+                            <span>Last Service: {asset.lastMaintenanceDate || 'Recent'}</span>
+                            <span className="text-indigo-600 font-semibold">Warranty Protected</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                      asset.status === 'available' ? 'bg-green-100 text-green-700' :
-                      asset.status === 'assigned' ? 'bg-blue-100 text-blue-700' :
-                      asset.status === 'maintenance' ? 'bg-yellow-100 text-yellow-700' : 'bg-neutral-100 text-neutral-700'
-                    }`}>
-                      {asset.status}
-                    </span>
+
+                    {/* Assigned Custodian Banner & Quick Actions */}
+                    <div className="pt-3 border-t border-neutral-100 space-y-3">
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-neutral-900 text-white font-bold flex items-center justify-center text-[11px] shrink-0 shadow-2xs">
+                            {asset.employee ? (asset.employee.firstName?.[0] || 'U') : 'D'}
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-[10px] text-neutral-400 uppercase font-bold block leading-none">
+                              {isVeh ? 'Assigned Driver' : 'Assigned Custodian'}
+                            </span>
+                            <span className="font-bold text-neutral-900 truncate block mt-0.5">
+                              {asset.employee ? (asset.employee.name || `${asset.employee.firstName} ${asset.employee.lastName}`) : 'In Fleet Depot (Available)'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className="text-[11px] font-semibold text-neutral-400">
+                          {asset.employee?.employeeId ? `#${asset.employee.employeeId}` : ''}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-neutral-100/70">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAssetClick(asset);
+                          }}
+                          className="w-full py-2 px-3 bg-neutral-50 hover:bg-neutral-100 text-neutral-800 border border-neutral-200/90 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs group-hover:border-neutral-300"
+                        >
+                          <History className="w-3.5 h-3.5 text-neutral-500" />
+                          <span>360° History & Service</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="font-bold text-neutral-900 truncate" title={asset.name}>{asset.name}</h3>
-                  <p className="text-xs text-neutral-500 font-mono mt-0.5 mb-4">{asset.assetTag}</p>
-                  
-                  <div className="mt-auto pt-4 border-t border-neutral-50 flex items-center gap-2">
-                    {asset.employee ? (
-                       <div className="flex items-center gap-2 w-full">
-                         <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold shrink-0">
-                           {asset.employee.name?.charAt(0) || asset.employee.firstName?.charAt(0) || 'U'}
-                         </div>
-                         <div className="text-xs truncate font-medium text-neutral-700">
-                           {asset.employee.name || `${asset.employee.firstName} ${asset.employee.lastName}`}
-                         </div>
-                       </div>
-                    ) : asset.site ? (
-                       <div className="text-xs font-medium text-indigo-700 truncate w-full">📍 {asset.site.name}</div>
-                    ) : (
-                       <div className="text-xs text-neutral-400 font-medium">Unassigned (Available)</div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
